@@ -1,0 +1,39 @@
+POST http://localhost:3000/login
+Content-Type: application/json
+
+{
+    "email": "nhattan24121999@gmail.com",
+    "password": "123456"
+}
+
+###
+POST http://localhost:3000/signup
+Content-Type: application/json
+
+{
+    "email": "nhattan24121999@gmail.com",
+    "password": "123456",
+    "confirmPassword": "123456"
+}
+
+###
+GET http://localhost:3000/getUserInfo
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYxYThhMzZlM2I2NmViODk0ZDI4MmMyMSIsImlhdCI6MTYzODQ1ODg0MSwiZXhwIjoxNjM4NTQ1MjQxfQ.MNZ66HSsbT0rrazjmsCaJA4KVwM5-baQfS_b5vXCmAk
+
+
+###
+POST http://localhost:3000/forgotPassword
+Content-Type: application/json
+
+{
+    "email": "nhattan24121999@gmail.com"
+}
+
+###
+POST http://localhost:3000/resetPassword/D2D51091
+Content-Type: application/json
+
+{
+    "password": "123456",
+    "confirmPassword": "123456"
+}
