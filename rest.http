@@ -36,7 +36,7 @@ POST {{host}}resetPassword
 Content-Type: application/json
 
 {
-    "token": "",
+    "token": "F2B0A184",
     "password": "123456",
     "confirmPassword": "123456"
 }
