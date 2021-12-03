@@ -10,5 +10,5 @@ router.get('/getUserInfo', auth, UserController.getUserInfo)
 
 router.post('/forgotPassword', validateBody("userSchema"), UserController.forgotPassword)
 
-router.post('/resetPassword/:token', validateBody("userSchema"), UserController.resetPassword)
+router.post('/resetPassword', validateBody("userSchema"), UserController.resetPassword)
 module.exports = router

@@ -232,9 +232,8 @@ class UserController {
     }
     async resetPassword(req, res) {
         try {
-            let {token} = req.params
-            const {password, confirmPassword} = req.body
-
+            let {token, password, confirmPassword} = req.body
+            // console.log(token);
             token = token.toLowerCase()
 
             // Validate token
