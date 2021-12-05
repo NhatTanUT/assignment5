@@ -1,5 +1,5 @@
 const bcrypt = require("bcrypt");
-const { Users } = require("../models/User.model");
+const Users = require("../models/User.model");
 const { createAccessToken } = require("../helper/createToken");
 const { sendMail } = require("../helper/mailer");
 const {randomBytes} = require('crypto')
