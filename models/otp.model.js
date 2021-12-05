@@ -1,7 +1,7 @@
 const mongoose = require('mongoose')
 
-const tokenSchema = new mongoose.Schema({
-    token: {
+const otpSchema = new mongoose.Schema({
+    otp: {
         type: String,
         required: true,
         trim: true,
@@ -18,4 +18,4 @@ const tokenSchema = new mongoose.Schema({
     }
 })
 
-module.exports = new mongoose.model('Token', tokenSchema)
+module.exports = new mongoose.model('Otp', otpSchema)

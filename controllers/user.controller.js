@@ -3,7 +3,7 @@ const { Users } = require("../models/User.model");
 const { createAccessToken } = require("../helper/createToken");
 const { sendMail } = require("../helper/mailer");
 const {randomBytes} = require('crypto')
-const Tokens = require('../models/token.model')
+const Otps = require('../models/otp.model')
 
 class UserController {
     async login(req, res) {
@@ -112,7 +112,7 @@ class UserController {
                 return res.status(400).json({msg: "Not found email!"})
             }
 
-            const token = randomBytes(4).toString('hex');
+            const otp = randomBytes(4).toString('hex');
             
             // Create expire time
             let date = new Date()
@@ -120,20 +120,15 @@ class UserController {
             date.setTime(date.getTime() + (15*60*1000))
             // console.log(date);
 
-            // Create token
-            const newToken = new Tokens({
-                token,
+            // Create otp
+            const newOtp = new Otps({
+                otp,
                 userId: foundUser._id,
                 expire: date,
                 isUsed: false
             })
 
-            await newToken.save()
-
-            const link =
-                req.header('host') +
-                "/resetPassword/" +
-                token;
+            await newOtp.save()
 
             const to = foundUser.email;
             const subject = "Reset password";
@@ -185,15 +180,15 @@ class UserController {
                                               <span
                                                   style="display:inline-block; vertical-align:middle; margin:29px 0 26px; border-bottom:1px solid #cecece; width:100px;"></span>
                                               <p style="color:#455056; font-size:15px;line-height:24px; margin:0;">
-                                                  We cannot simply send you your old password. A unique token to reset your
-                                                  password has been generated for you. To reset your password, copy token and paste in reset password page.
+                                                  We cannot simply send you your old password. A unique otp to reset your
+                                                  password has been generated for you. To reset your password, copy otp and paste in reset password page.
                                               </p>
                                               <p style="color:#455056; font-size:15px;line-height:24px; margin:0;">
-                                                  Token will expire after 15 minutes
+                                                  OTP will expire after 15 minutes
                                               </p>
                                               <a 
                                                   style="background:#20e277;text-decoration:none !important; font-weight:500; margin-top:35px; color:#fff;text-transform:uppercase; font-size:14px;padding:10px 24px;display:inline-block;border-radius:50px;">
-                                                  ${token}</a>
+                                                  ${otp}</a>
                                                 
                                           </td>
                                       </tr>
@@ -232,29 +227,29 @@ class UserController {
     }
     async resetPassword(req, res) {
         try {
-            let {token, password, confirmPassword} = req.body
-            // console.log(token);
-            token = token.toLowerCase()
+            let {otp, password, confirmPassword} = req.body
+            // console.log(otp);
+            otp = otp.toLowerCase()
 
-            // Validate token
+            // Validate otp
             if (password !== confirmPassword) {
                 return res.status(400).json({msg: "Confirm password is not equal to password"})
             }
             const date = new Date()
-            const foundToken = await Tokens.findOne({token})
+            const foundOtp = await Otps.findOne({otp})
 
-            if (!foundToken) return res.status(401).json({msg: "Invalid token."})
+            if (!foundOtp) return res.status(401).json({msg: "Invalid otp."})
 
-            if (foundToken.expire < date) {
-                return res.status(401).json({msg: "Token expired"})
+            if (foundOtp.expire < date) {
+                return res.status(401).json({msg: "Otp expired"})
             } 
             
-            if (foundToken.isUsed === true) {
-                return res.status(401).json({msg: "Use only token 1 time"})
+            if (foundOtp.isUsed === true) {
+                return res.status(401).json({msg: "Use only otp 1 time"})
             }
 
             // Update password
-            const foundUser = await Users.findById(foundToken.userId)
+            const foundUser = await Users.findById(foundOtp.userId)
 
             const passwordHash = await bcrypt.hash(password, 12);
 
@@ -262,9 +257,9 @@ class UserController {
 
             await foundUser.save()
 
-            // Update token (isUsed: true)
-            foundToken.isUsed = true
-            await foundToken.save()
+            // Update otp (isUsed: true)
+            foundOtp.isUsed = true
+            await foundOtp.save()
 
             return res.status(200).json({msg: "Reset password successfully"})
             
