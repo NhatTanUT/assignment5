@@ -51,6 +51,7 @@ class UserController {
             if (!password)
                 return next(createError(400, "Must have password. "))
 
+            if (confirmPassword === password) return next(createError(400, "Confirm password must be the same password"))
 
             // Find user exist by email
             const foundEmail = await Users.findOne({ email: email });
@@ -112,7 +113,7 @@ class UserController {
 
             const otp = randomBytes(4).toString('hex');
             
-            // Create expire time from date.now()
+            // Create expire time from date.now(). Expire time is specified in model.
             let date = new Date()
             // console.log(date);
 

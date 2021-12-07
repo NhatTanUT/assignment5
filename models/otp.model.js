@@ -12,7 +12,7 @@ const otpSchema = new mongoose.Schema({
     },
     expire: {
         type: Date,
-        expires: "60" // 1 minutes
+        expires: "60" // document will be removed in 1 minutes
     }
 })
 
