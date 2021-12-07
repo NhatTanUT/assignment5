@@ -1,12 +1,15 @@
 const bcrypt = require("bcrypt");
+const mongoose = require('mongoose')
+const createError = require('http-errors')
+
 const Users = require("../models/User.model");
+const Otps = require('../models/otp.model')
 const { createAccessToken } = require("../helper/createToken");
 const { sendMail } = require("../helper/mailer");
 const {randomBytes} = require('crypto')
-const Otps = require('../models/otp.model')
 
 class UserController {
-    async login(req, res) {
+    async login(req, res, next) {
         try {
             const { email, password } = req.body;
 
@@ -14,14 +17,12 @@ class UserController {
             const user = await Users.findOne({ email: email });
 
             if (!user)
-                return res
-                    .status(401)
-                    .json({ msg: "This email does not exist." });
+                return next(createError(400, "This email does not exist.")) 
 
             // Check password
             const isMatch = await bcrypt.compare(password, user.password);
             if (!isMatch)
-                return res.status(401).json({ msg: "Password is incorrect." });
+                return next(createError(401, "Password is incorrect.")) 
 
             // Create token
             const access_token = createAccessToken({ id: user._id });
@@ -35,28 +36,26 @@ class UserController {
                 },
             });
         } catch (error) {
-            res.status(400).json({ msg: error.message });
+            next(createError(400, error.message))
         }
     }
-    async signup(req, res) {
+    async signup(req, res, next) {
         try {
             const { email, password, confirmPassword } = req.body;
             // let newEmail = email.toLowerCase() // /g replace remove first element. /g to remove all (purpose: remove space)
 
             // Check have password
             if (!confirmPassword)
-                return res
-                    .status(400)
-                    .json({ msg: "Must have confirm password. " });
+                return next(createError(400, "Must have confirm password. "))
+
             if (!password)
-                return res.status(400).json({ msg: "Must have password. " });
+                return next(createError(400, "Must have password. "))
+
 
             // Find user exist by email
             const foundEmail = await Users.findOne({ email: email });
             if (foundEmail)
-                return res
-                    .status(400)
-                    .json({ msg: "This email already registered. " });
+                return next(createError(400, "This email already registered. "))
 
             // if (password.length < 6)
             //     return res
@@ -84,52 +83,60 @@ class UserController {
                 },
             });
         } catch (error) {
-            return res.status(400).json({ msg: error.message });
+            return next(createError(400, error.message))
         }
     }
 
-    async getUserInfo(req, res) {
+    async getUserInfo(req, res, next) {
         try {
             const userId = req.user._id;
             const foundUser = await Users.findOne({ _id: userId });
 
             if (!foundUser)
-                return res.status(400).json({ msg: "Not found user" });
+                return next(createError(400, "Not found user"))
 
             return res.status(200).json(foundUser);
         } catch (error) {
-            return res.status(400).json({ msg: error.message });
+            return next(createError(400, error.message))
         }
     }
-    async forgotPassword(req, res) {
+    async forgotPassword(req, res, next) {
         try {
             const {email} = req.body
-            // console.log(req.header('host'));
 
             // Validate
             const foundUser = await Users.findOne({ email: email }).lean();
             if (!foundUser) {
-                return res.status(400).json({msg: "Not found email!"})
+                return next(createError(400, "Not found email!"))
             }
 
             const otp = randomBytes(4).toString('hex');
             
-            // Create expire time
+            // Create expire time from date.now()
             let date = new Date()
             // console.log(date);
-            date.setTime(date.getTime() + (15*60*1000))
-            // console.log(date);
 
-            // Create otp
-            const newOtp = new Otps({
-                otp,
-                userId: foundUser._id,
-                expire: date,
-                isUsed: false
-            })
+            // Check OTP exist
+            const foundOtp = await Otps.findOne({userId: mongoose.Types.ObjectId(foundUser._id)})
+            if (foundOtp) {
+                const updateOtp = await Otps.updateOne({userId: mongoose.Types.ObjectId(foundUser._id)}, {$set: {otp: otp}})
 
-            await newOtp.save()
+                if (updateOtp.matchedCount === 0) {
+                    return next(createError(400, "Cant update otp"))
+                }
+            }
+            else {
+                // Create otp
+                const newOtp = new Otps({
+                    otp,
+                    userId: foundUser._id,
+                    expire: date
+                })
+    
+                await newOtp.save()
+            }
 
+            // To, Subject, Body Mail
             const to = foundUser.email;
             const subject = "Reset password";
             const body = `
@@ -184,7 +191,7 @@ class UserController {
                                                   password has been generated for you. To reset your password, copy otp and paste in reset password page.
                                               </p>
                                               <p style="color:#455056; font-size:15px;line-height:24px; margin:0;">
-                                                  OTP will expire after 15 minutes
+                                                  OTP will expire after 1 minutes
                                               </p>
                                               <a 
                                                   style="background:#20e277;text-decoration:none !important; font-weight:500; margin-top:35px; color:#fff;text-transform:uppercase; font-size:14px;padding:10px 24px;display:inline-block;border-radius:50px;">
@@ -220,51 +227,47 @@ class UserController {
             // Send mail
             await sendMail(to, subject, body);
 
-            return res.json({msg: "Send to email :" + email})
+            return res.status(200).json({msg: "Send to email :" + email})
         } catch (error) {
-            return res.status(400).json({ msg: error.message });
+            return next(createError(400, error.message))
         }
     }
-    async resetPassword(req, res) {
+    async resetPassword(req, res, next) {
         try {
-            let {otp, password, confirmPassword} = req.body
+            let {otp, email, password, confirmPassword} = req.body
             // console.log(otp);
             otp = otp.toLowerCase()
 
             // Validate otp
             if (password !== confirmPassword) {
-                return res.status(400).json({msg: "Confirm password is not equal to password"})
+                return next(createError(400, "Confirm password is not equal to password"))
             }
-            const date = new Date()
+            
+            // Find Otp
             const foundOtp = await Otps.findOne({otp})
 
-            if (!foundOtp) return res.status(401).json({msg: "Invalid otp."})
+            if (!foundOtp) return next(createError(401, "Invalid otp or otp expired. Please reset again. "))
 
-            if (foundOtp.expire < date) {
-                return res.status(401).json({msg: "Otp expired"})
-            } 
-            
-            if (foundOtp.isUsed === true) {
-                return res.status(401).json({msg: "Use only otp 1 time"})
+            const foundUser = await Users.findById(foundOtp.userId)
+
+            if (!foundUser) return next(createError(400, "Cant find userId"))
+
+            // Check email 
+            if (email !== foundUser.email) {
+                return next(createError(400, 'Email is incorrect. '))
             }
 
             // Update password
-            const foundUser = await Users.findById(foundOtp.userId)
-
             const passwordHash = await bcrypt.hash(password, 12);
 
             foundUser.password = passwordHash
 
             await foundUser.save()
 
-            // Update otp (isUsed: true)
-            foundOtp.isUsed = true
-            await foundOtp.save()
-
             return res.status(200).json({msg: "Reset password successfully"})
             
         } catch (error) {
-            return res.status(400).json({ msg: error.message });
+            return next(createError(400, error.message))
             
         }
     }

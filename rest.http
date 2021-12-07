@@ -5,7 +5,7 @@ Content-Type: application/json
 
 {
     "email": "nhattan24121999@gmail.com",
-    "password": "123456"
+    "password": "12345678"
 }
 
 ###
@@ -13,14 +13,14 @@ POST {{host}}signup
 Content-Type: application/json
 
 {
-    "email": "nhattan24121999@gmail.com",
+    "email": "tvnt221@gmail.com",
     "password": "123456",
     "confirmPassword": "123456"
 }
 
 ###
 GET {{host}}getUserInfo
-Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYxYThhMzZlM2I2NmViODk0ZDI4MmMyMSIsImlhdCI6MTYzODQ1ODg0MSwiZXhwIjoxNjM4NTQ1MjQxfQ.MNZ66HSsbT0rrazjmsCaJA4KVwM5-baQfS_b5vXCmAk
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCIdgkpXVCJ9.eyJpZCI6IjYxYThmMGI2MmNiZTg1MDRmNzJkOWJlMSIsImlhdCI6MTYzODg0MTE2OCwiZXhwIjoxNjM4OTI3NTY4fQ.ZwylFqV1STX1r6WRZnkkRJWP_95X9rHaGUs39wiBJqI
 
 
 ###
@@ -28,7 +28,7 @@ POST {{host}}forgotPassword
 Content-Type: application/json
 
 {
-    "email": "nhattan24121999@gmail.com"
+    "email": "tvnt221@gmail.com"
 }
 
 ###
@@ -36,7 +36,8 @@ POST {{host}}resetPassword
 Content-Type: application/json
 
 {
-    "otp": "D056BD18",
-    "password": "12345678",
-    "confirmPassword": "12345678"
+    "otp": "1EE7BAD7",
+    "email": "tvnt221@gmail.com",
+    "password": "",
+    "confirmPassword": ""
 }
