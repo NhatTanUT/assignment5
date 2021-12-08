@@ -51,8 +51,6 @@ class UserController {
             if (!password)
                 return next(createError(400, "Must have password. "))
 
-            if (confirmPassword === password) return next(createError(400, "Confirm password must be the same password"))
-
             // Find user exist by email
             const foundEmail = await Users.findOne({ email: email });
             if (foundEmail)
@@ -192,7 +190,7 @@ class UserController {
                                                   password has been generated for you. To reset your password, copy otp and paste in reset password page.
                                               </p>
                                               <p style="color:#455056; font-size:15px;line-height:24px; margin:0;">
-                                                  OTP will expire after 1 minutes
+                                                  OTP will expire after 2 minutes
                                               </p>
                                               <a 
                                                   style="background:#20e277;text-decoration:none !important; font-weight:500; margin-top:35px; color:#fff;text-transform:uppercase; font-size:14px;padding:10px 24px;display:inline-block;border-radius:50px;">
@@ -264,6 +262,9 @@ class UserController {
             foundUser.password = passwordHash
 
             await foundUser.save()
+
+            // remove otp after use
+            await Otps.deleteOne({otp})
 
             return res.status(200).json({msg: "Reset password successfully"})
             

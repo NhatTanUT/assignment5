@@ -13,14 +13,14 @@ POST {{host}}signup
 Content-Type: application/json
 
 {
-    "email": "tvnt221@gmail.com",
-    "password": "123456",
-    "confirmPassword": "123456"
+    "email": "tvnt22123@gmail.com",
+    "password": "1234567",
+    "confirmPassword": "1234567"
 }
 
 ###
 GET {{host}}getUserInfo
-Authorization: eyJhbGciOiJIUzI1NiIsInR5cCIdgkpXVCJ9.eyJpZCI6IjYxYThmMGI2MmNiZTg1MDRmNzJkOWJlMSIsImlhdCI6MTYzODg0MTE2OCwiZXhwIjoxNjM4OTI3NTY4fQ.ZwylFqV1STX1r6WRZnkkRJWP_95X9rHaGUs39wiBJqI
+Authorization: eyJhbGciOiJI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYxYThmMGI2MmNiZTg1MDRmNzJkOWJlMSIsImlhdCI6MTYzODkzMjk1OCwiZXhwIjoxNjM5MDE5MzU4fQ.gCR97cMEVfWR1cX0VaLQCXT7Wr16MvDOfBklQsyxTd8
 
 
 ###
@@ -36,8 +36,8 @@ POST {{host}}resetPassword
 Content-Type: application/json
 
 {
-    "otp": "1EE7BAD7",
+    "otp": "02f629f3",
     "email": "tvnt221@gmail.com",
-    "password": "",
-    "confirmPassword": ""
+    "password": "12345678",
+    "confirmPassword": "12345678"
 }
